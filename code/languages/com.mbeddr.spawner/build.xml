@@ -12,8 +12,8 @@
  <taskdef resource="jetbrains/mps/build/ant/antlib.xml"
           classpathref="mps.ant.path"/>
 
-  <property name="util.project.dir" value="code/languages/com.mbeddr.mpsutil"/>
-  <property name="util.project.mpr" value="code/languages/com.mbeddr.mpsutil/mpsutil.dev.mpr"/>
+  <property name="spawner.project.dir" value="code/languages/com.mbeddr.spawner"/>
+  <property name="spawner.project.mpr" value="code/languages/com.mbeddr.spawner/spawner.mpr"/>
 
     <jvmargs id="myargs">
       <arg value="-ea"/>
@@ -37,7 +37,7 @@
   
   <target name="delete-mps-generated-code" >
   	<delete includeemptydirs="true">
-      <fileset dir="${mbeddr.github.core.home}/${util.project.dir}" defaultexcludes="false">
+      <fileset dir="${mbeddr.github.core.home}/${spawner.project.dir}" defaultexcludes="false">
          <include name="**/source_gen/**" />
          <include name="**/source_gen.caches/**" />
          <include name="**/classes_gen/**" />
@@ -48,7 +48,7 @@
   <target name="build-languages" depends="init">
     <mps.generate parallelMode="true" fork="true">
       <jvmargs refid="myargs"/>
-      <modules dir="${mbeddr.github.core.home}/${util.project.dir}/languages"/>
+      <modules dir="${mbeddr.github.core.home}/${spawner.project.dir}/languages"/>
     </mps.generate>
   </target>
 
