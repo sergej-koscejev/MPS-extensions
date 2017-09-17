@@ -1,19 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<model ref="r:cfe7dab7-768f-4dbe-b5cd-9398ab4e844c(test.debugging.core.dummy2)">
+<model ref="r:589b928a-4d5b-49dd-beb9-ae716679367d(test.debugging.core.statements_in_testcases)">
   <persistence version="9" />
   <languages>
-    <use id="06d68b77-b699-4918-83b8-857e63787800" name="com.mbeddr.core.unittest" version="3" />
     <use id="89c70b13-7f9c-47c3-b3c2-c218b52ed82c" name="com.mbeddr.core.debug.test" version="0" />
-    <use id="2693fc71-9b0e-4b05-ab13-f57227d675f2" name="com.mbeddr.core.util" version="0" />
-    <use id="6d11763d-483d-4b2b-8efc-09336c1b0001" name="com.mbeddr.core.modules" version="4" />
-    <use id="2d7fadf5-33f6-4e80-a78f-0f739add2bde" name="com.mbeddr.core.buildconfig" version="5" />
-    <use id="3bf5377a-e904-4ded-9754-5a516023bfaa" name="com.mbeddr.core.pointers" version="0" />
-    <use id="a9d69647-0840-491e-bf39-2eb0805d2011" name="com.mbeddr.core.statements" version="1" />
-    <use id="efda956e-491e-4f00-ba14-36af2f213ecf" name="com.mbeddr.core.udt" version="2" />
+    <use id="2d7fadf5-33f6-4e80-a78f-0f739add2bde" name="com.mbeddr.core.buildconfig" version="1" />
     <use id="61c69711-ed61-4850-81d9-7714ff227fb0" name="com.mbeddr.core.expressions" version="3" />
+    <use id="a9d69647-0840-491e-bf39-2eb0805d2011" name="com.mbeddr.core.statements" version="2" />
+    <use id="2693fc71-9b0e-4b05-ab13-f57227d675f2" name="com.mbeddr.core.util" version="0" />
+    <use id="06d68b77-b699-4918-83b8-857e63787800" name="com.mbeddr.core.unittest" version="3" />
+    <use id="6d11763d-483d-4b2b-8efc-09336c1b0001" name="com.mbeddr.core.modules" version="4" />
   </languages>
   <imports>
-    <import index="q9ah" ref="r:881cd106-b9c3-33d3-8c69-9a76f591f92a(com.mbeddr.debugger.tests.__spreferences.PlatformTemplates)" implicit="true" />
+    <import index="q9ah" ref="r:881cd106-b9c3-33d3-8c69-9a76f591f92a(com.mbeddr.debugger.tests.__spreferences.PlatformTemplates)" />
   </imports>
   <registry>
     <language id="a9d69647-0840-491e-bf39-2eb0805d2011" name="com.mbeddr.core.statements">
@@ -33,7 +31,6 @@
     </language>
     <language id="2d7fadf5-33f6-4e80-a78f-0f739add2bde" name="com.mbeddr.core.buildconfig">
       <concept id="5046689135693761556" name="com.mbeddr.core.buildconfig.structure.Binary" flags="ng" index="2eOfOj">
-        <reference id="2504745233808502246" name="target" index="3oK8_y" />
         <child id="5046689135693761559" name="referencedModules" index="2eOfOg" />
       </concept>
       <concept id="5046689135693761554" name="com.mbeddr.core.buildconfig.structure.Executable" flags="ng" index="2eOfOl">
@@ -46,8 +43,14 @@
       <concept id="7717755763392524107" name="com.mbeddr.core.buildconfig.structure.ModuleRef" flags="ng" index="2v9HqM">
         <reference id="7717755763392524108" name="module" index="2v9HqP" />
       </concept>
-      <concept id="8719112291175211294" name="com.mbeddr.core.buildconfig.structure.PlatformReference" flags="ng" index="2xfidK">
-        <reference id="8719112291175211414" name="template" index="2xfifS" />
+      <concept id="5323740605968447022" name="com.mbeddr.core.buildconfig.structure.DesktopPlatform" flags="ng" index="2AWWZL">
+        <property id="5323740605968447025" name="compilerOptions" index="2AWWZI" />
+        <property id="5323740605968447024" name="compiler" index="2AWWZJ" />
+        <property id="3963667026125442601" name="gdb" index="3r8Kw1" />
+        <property id="3963667026125442676" name="make" index="3r8Kxs" />
+      </concept>
+      <concept id="2736179788492003936" name="com.mbeddr.core.buildconfig.structure.IDebuggablePlatform" flags="ng" index="1FkSt_">
+        <property id="2736179788492003937" name="debugOptions" index="1FkSt$" />
       </concept>
     </language>
     <language id="2693fc71-9b0e-4b05-ab13-f57227d675f2" name="com.mbeddr.core.util">
@@ -143,66 +146,33 @@
     </node>
     <node concept="2eOfOl" id="2s7Bv57Qoc3" role="2ePNbc">
       <property role="iO3LB" value="true" />
-      <property role="TrG5h" value="UnitTestTestss" />
-      <ref role="3oK8_y" to="q9ah:7Rwa0lvu8YO" resolve="portable" />
+      <property role="TrG5h" value="TestStatementsTest" />
       <node concept="2v9HqM" id="2s7Bv57Qoc4" role="2eOfOg">
-        <ref role="2v9HqP" node="2s7Bv57Qoc5" resolve="UnitTest" />
+        <ref role="2v9HqP" node="2s7Bv57Qoc5" resolve="TestStatements" />
       </node>
     </node>
-    <node concept="2xfidK" id="6v3tcHGMLNF" role="2AWWZH">
-      <ref role="2xfifS" to="q9ah:7sNQp65l2BT" resolve="Desktop Platform" />
+    <node concept="2AWWZL" id="3uHGTbh6A8r" role="2AWWZH">
+      <property role="2AWWZJ" value="gcc" />
+      <property role="3r8Kw1" value="gdb" />
+      <property role="3r8Kxs" value="make" />
+      <property role="2AWWZI" value="-std=c99" />
+      <property role="1FkSt$" value="-g" />
     </node>
-    <node concept="12mU2y" id="22oVTLUfqL9" role="2Q9xDr">
-      <node concept="3GpDuo" id="22oVTLUfqLa" role="3GpDut" />
+    <node concept="12mU2y" id="22oVTLUfqLZ" role="2Q9xDr">
+      <node concept="3GpDuo" id="22oVTLUfqM0" role="3GpDut" />
     </node>
   </node>
   <node concept="N3F5e" id="2s7Bv57Qoc5">
-    <property role="TrG5h" value="UnitTest" />
-    <node concept="lIfQi" id="4Tiud0TdXER" role="N3F5h">
+    <property role="TrG5h" value="TestStatements" />
+    <node concept="lIfQi" id="4Tiud0TdXG3" role="N3F5h">
       <property role="TrG5h" value="main" />
       <property role="3HjyOP" value="true" />
-      <node concept="3cM6IN" id="4Tiud0TdXEP" role="lIfQt">
+      <node concept="3cM6IN" id="4Tiud0TdXG2" role="lIfQt">
         <ref role="3cM6IK" node="2s7Bv57Qoc_" resolve="testCase1" />
-      </node>
-      <node concept="3cM6IN" id="4Tiud0TdXEQ" role="lIfQt">
-        <ref role="3cM6IK" node="2s7Bv57Qoco" resolve="testCase2" />
       </node>
     </node>
     <node concept="2NXPZ9" id="2s7Bv57Qocn" role="N3F5h">
       <property role="TrG5h" value="empty_1341576747141_1" />
-    </node>
-    <node concept="c0Qz5" id="2s7Bv57Qoco" role="N3F5h">
-      <property role="2OOxQR" value="true" />
-      <property role="TrG5h" value="testCase2" />
-      <node concept="19Rifw" id="2s7Bv57Qocp" role="2C2TGm">
-        <property role="2caQfQ" value="false" />
-        <property role="2c7vTL" value="false" />
-      </node>
-      <node concept="3XIRFW" id="2s7Bv57Qocq" role="c0Qz3">
-        <node concept="3XIRlf" id="2s7Bv57Qocr" role="3XIRFZ">
-          <property role="TrG5h" value="a" />
-          <node concept="26Vqph" id="2s7Bv57Qocs" role="2C2TGm">
-            <property role="2caQfQ" value="false" />
-            <property role="2c7vTL" value="false" />
-          </node>
-          <node concept="3TlMh9" id="2s7Bv57Qoct" role="3XIe9u">
-            <property role="2hmy$m" value="1" />
-          </node>
-          <node concept="3cQ7KT" id="2s7Bv57Qocu" role="lGtFl">
-            <property role="TrG5h" value="1stStmntIn2ndTest" />
-          </node>
-        </node>
-        <node concept="c0Tn9" id="2s7Bv57Qocv" role="3XIRFZ">
-          <node concept="3TlM44" id="2s7Bv57Qocw" role="c0Tn6">
-            <node concept="3TlMh9" id="2s7Bv57Qocx" role="3TlMhJ">
-              <property role="2hmy$m" value="1" />
-            </node>
-            <node concept="3ZVu4v" id="2s7Bv57Qocy" role="3TlMhI">
-              <ref role="3ZVs_2" node="2s7Bv57Qocr" resolve="a" />
-            </node>
-          </node>
-        </node>
-      </node>
     </node>
     <node concept="2NXPZ9" id="2s7Bv57Qocz" role="N3F5h">
       <property role="TrG5h" value="empty_1341576747440_2" />
@@ -227,9 +197,6 @@
           <node concept="3TlMh9" id="2s7Bv57QocE" role="3XIe9u">
             <property role="2hmy$m" value="1" />
           </node>
-          <node concept="3cQ7KT" id="2s7Bv57QocF" role="lGtFl">
-            <property role="TrG5h" value="1stStmntIn1stTest" />
-          </node>
         </node>
         <node concept="c0Tn9" id="2s7Bv57QocG" role="3XIRFZ">
           <node concept="3TlM44" id="2s7Bv57QocH" role="c0Tn6">
@@ -241,7 +208,7 @@
             </node>
           </node>
           <node concept="3cQ7KT" id="2s7Bv57QocK" role="lGtFl">
-            <property role="TrG5h" value="2ndStmntIn2ndTest" />
+            <property role="TrG5h" value="secondStmntInTest" />
           </node>
         </node>
         <node concept="1_9egQ" id="2s7Bv57QocL" role="3XIRFZ">
@@ -249,7 +216,7 @@
             <ref role="3O_q_h" node="2s7Bv57Qod3" resolve="f" />
           </node>
           <node concept="3cQ7KT" id="2s7Bv57QocN" role="lGtFl">
-            <property role="TrG5h" value="funcCallIn1stTest" />
+            <property role="TrG5h" value="functionCallInTest" />
           </node>
         </node>
         <node concept="pFomP" id="2s7Bv57QocO" role="3XIRFZ">
@@ -270,6 +237,9 @@
               <ref role="3ZVs_2" node="2s7Bv57QocC" resolve="a" />
             </node>
           </node>
+          <node concept="3cQ7KT" id="2s7Bv57QocV" role="lGtFl">
+            <property role="TrG5h" value="stmntAfterSameTypeExpr" />
+          </node>
         </node>
         <node concept="c0Tn9" id="2s7Bv57QocW" role="3XIRFZ">
           <node concept="3TlM44" id="2s7Bv57QocX" role="c0Tn6">
@@ -281,7 +251,7 @@
             </node>
           </node>
           <node concept="3cQ7KT" id="2s7Bv57Qod0" role="lGtFl">
-            <property role="TrG5h" value="lastStmntIn1stTest" />
+            <property role="TrG5h" value="lastStmntInTest" />
           </node>
         </node>
       </node>
@@ -304,9 +274,6 @@
           <node concept="3TlMh9" id="2s7Bv57Qod7" role="3XIe9u">
             <property role="2hmy$m" value="2" />
           </node>
-          <node concept="3cQ7KT" id="2s7Bv57Qod8" role="lGtFl">
-            <property role="TrG5h" value="1stStmntInTestHelper" />
-          </node>
         </node>
         <node concept="c0Tn9" id="2s7Bv57Qod9" role="3XIRFZ">
           <node concept="3TlM44" id="2s7Bv57Qoda" role="c0Tn6">
@@ -318,7 +285,11 @@
             </node>
           </node>
         </node>
-        <node concept="2eY$_Z" id="2s7Bv57Qodd" role="3XIRFZ" />
+        <node concept="2eY$_Z" id="2s7Bv57Qodd" role="3XIRFZ">
+          <node concept="3cQ7KT" id="2s7Bv57Qode" role="lGtFl">
+            <property role="TrG5h" value="failInTestHelper" />
+          </node>
+        </node>
         <node concept="c0Tn9" id="2s7Bv57Qodf" role="3XIRFZ">
           <node concept="3TlM44" id="2s7Bv57Qodg" role="c0Tn6">
             <node concept="3TlMh9" id="2s7Bv57Qodh" role="3TlMhJ">
@@ -327,6 +298,9 @@
             <node concept="3ZVu4v" id="2s7Bv57Qodi" role="3TlMhI">
               <ref role="3ZVs_2" node="2s7Bv57Qod5" resolve="a" />
             </node>
+          </node>
+          <node concept="3cQ7KT" id="2s7Bv57Qodj" role="lGtFl">
+            <property role="TrG5h" value="lastStmntInTestHelper" />
           </node>
         </node>
         <node concept="3XISUE" id="2s7Bv57Qodk" role="3XIRFZ" />
