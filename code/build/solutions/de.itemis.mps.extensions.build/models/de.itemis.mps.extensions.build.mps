@@ -7307,11 +7307,6 @@
             <ref role="1Busuk" to="ffeo:7Kfy9QB6KYb" resolve="jetbrains.mps.baseLanguage" />
           </node>
         </node>
-        <node concept="1SiIV0" id="3OVhQEUSlqi" role="3bR37C">
-          <node concept="Rbm2T" id="3OVhQEUSlqj" role="1SiIV1">
-            <ref role="1E1Vl2" node="2Xjt3l57hh_" resolve="de.slisson.mps.reflection" />
-          </node>
-        </node>
       </node>
       <node concept="1E1JtA" id="3OVhQEUM97i" role="2G$12L">
         <property role="BnDLt" value="true" />
