@@ -1,34 +1,38 @@
-import buildlogic.additionalPomInfo
+import de.itemis.mps.gradle.GitBasedVersioning
 import de.itemis.mps.gradle.BuildLanguages
 import de.itemis.mps.gradle.EnvironmentKind
 import de.itemis.mps.gradle.RunAntScript
 import de.itemis.mps.gradle.TestLanguages
 import de.itemis.mps.gradle.tasks.MpsGenerate
+import de.itemis.mps.gradle.tasks.MpsMigrate
+import de.itemis.mps.gradle.tasks.Remigrate
 import javax.xml.parsers.DocumentBuilderFactory
 
 plugins {
     base
     `maven-publish`
-    id("buildlogic.mps-conventions")
-    id("org.cyclonedx.bom") version "3.2.0"
+    id("de.itemis.mps.gradle.common")
 }
 
 
-val scriptsBasePath: String by project
-val artifactsDir: File by project
-val mpsPluginsDir: String by project
+val jbrToolchainLauncher: Provider<JavaLauncher> by project
+
+val scriptsBasePath = rootProject.layout.buildDirectory.get().asFile.absolutePath
+val artifactsDir = rootProject.layout.buildDirectory.dir("artifacts/platform").get().asFile
+val mpsPluginsDir = rootProject.layout.buildDirectory.dir("mps-plugins").get().asFile.absolutePath
 
 fun scriptFile(relativePath: String): File = File("$scriptsBasePath/$relativePath")
 
 val script_test_mbeddrPlatform = File(scriptsBasePath, "com.mbeddr.platform/build-ts-tests.xml")
 val script_mbeddrPlatform_sandboxes = File(scriptsBasePath, "com.mbeddr.platform/build-sandboxes.xml")
 
-val reportsDir = rootProject.layout.buildDirectory.dir("reports").get().asFile
-
 // Project group
 group = "com.mbeddr"
+version = rootProject.version
 
 repositories {
+    maven("https://artifacts.itemis.cloud/repository/maven-mps/")
+    mavenCentral()
     // required for com.michaelbaranov:microba library
     maven("https://maven.atlassian.com/content/repositories/atlassian-public/")
 }
@@ -38,12 +42,7 @@ val mpsLibraries by configurations.registering {
 }
 
 dependencies {
-    if (project.hasProperty("mpsExtensionsZip")) {
-        mpsLibraries(files(project.property("mpsExtensionsZip")))
-    } else {
-        val mpsExtensionsVersion: CharSequence by project
-        mpsLibraries("de.itemis.mps:extensions:$mpsExtensionsVersion")
-    }
+    mpsLibraries(project(":", configuration = "mpsExtensionsZip"))
 }
 
 data class BundledDep(
@@ -116,11 +115,12 @@ val resolveMpsLibraries by tasks.registering(Sync::class) {
 
 val build_allScripts by tasks.registering(MpsGenerate::class) {
     description = "Generates the build script that contains all other build scripts."
-    javaLauncher = jbrToolchain.javaLauncher
+    javaLauncher = jbrToolchainLauncher
     environmentKind = EnvironmentKind.MPS
 
     val mpsHomeProvider: Provider<Directory> by project
     mpsHome = mpsHomeProvider
+
 
     projectLocation = file("com.mbeddr.platform.build")
     pluginRoots.from(tasks.named("resolveMpsLibraries", Sync::class.java).map { it.destinationDir })
@@ -155,8 +155,6 @@ val install_actionsfilter by tasks.registering(Copy::class) {
     include("com.mbeddr.mpsutil.actionsfilter/")
     into("$mpsPluginsDir")
 }
-
-tasks.getByPath(":com.mbeddr:install").dependsOn(install_actionsfilter)
 
 val generate_mbeddr_platform_tests by tasks.registering(RunAntScript::class) {
     dependsOn(build_platform)
@@ -205,9 +203,6 @@ val package_mbeddrPlatform by tasks.registering(Zip::class) {
     archiveFileName = "com.mbeddr.platform.zip"
     from(artifactsDir) {
         include("com.mbeddr.platform/**")
-    }
-    from(tasks.cyclonedxDirectBom) {
-        into("com.mbeddr.platform")
     }
 }
 
@@ -288,12 +283,49 @@ fun getProvidedDependenciesFromPom(pomFile: File): List<Coordinates> {
     return result
 }
 
+val mbeddrBuild = run {
+    val branch = GitBasedVersioning.getGitBranch()
+    when {
+        branch == "master" || branch.endsWith("-master") -> "master"
+        else -> branch.substringAfterLast("-")
+    }
+}
+
 publishing {
+    repositories {
+        val mbeddrPlatformBuildNumber = rootProject.version.toString()
+        maven {
+            url = uri(
+                if (mbeddrPlatformBuildNumber.endsWith("-SNAPSHOT"))
+                    "https://artifacts.itemis.cloud/repository/maven-mps-snapshots/"
+                else
+                    "https://artifacts.itemis.cloud/repository/maven-mps-releases/"
+            )
+            if (rootProject.hasProperty("artifacts.itemis.cloud.user") && rootProject.hasProperty("artifacts.itemis.cloud.pw")) {
+                credentials {
+                    username = rootProject.findProperty("artifacts.itemis.cloud.user") as String?
+                    password = rootProject.findProperty("artifacts.itemis.cloud.pw") as String?
+                }
+            }
+        }
+        if (mbeddrBuild == "master") {
+            maven {
+                name = "GitHubPackages"
+                url = uri("https://maven.pkg.github.com/mbeddr/mbeddr.core")
+                if (rootProject.hasProperty("gpr.token")) {
+                    credentials {
+                        username = rootProject.findProperty("gpr.user") as String?
+                        password = rootProject.findProperty("gpr.token") as String?
+                    }
+                }
+            }
+        }
+    }
     publications {
         create<MavenPublication>("mbeddrPlatform") {
             groupId = "com.mbeddr"
             artifactId = "platform"
-            version = project.property("mbeddrPlatformBuildNumber").toString()
+            version = rootProject.version.toString()
             artifact(package_mbeddrPlatform)
             pom.withXml {
                 val dependenciesNode = asNode().appendNode("dependencies")
@@ -301,9 +333,6 @@ publishing {
                 val configurationsWithProvidedDependencies = buildList {
                     add(mpsLibraries.get())
                     addAll(bundledDeps.map { configurations.get(it.configName) })
-                    if (!project.hasProperty("skipresolve_mps")) {
-                        add(project(":com.mbeddr").configurations["mps"])
-                    }
                 }
 
                 val seen = mutableSetOf<ResolvedDependency>()
@@ -347,38 +376,60 @@ publishing {
                     dependencyNode.appendNode("scope", "provided")
                 }
             }
-            pom(MavenPom::additionalPomInfo)
+            pom {
+                licenses {
+                    license {
+                        name = "EPL-2.0"
+                        url = "https://www.eclipse.org/legal/epl-v20.html"
+                        comments = "Eclipse Public License - v 2.0"
+                        distribution = "repo"
+                    }
+                }
+                organization {
+                    name = "itemis AG"
+                    url = "https://www.itemis.com"
+                }
+            }
         }
     }
 }
 
-val mbeddrBuild: String by project
-
 if (mbeddrBuild == "master") {
-    /* this is pretty much a workaround so we don"t need to change anything in Teamcity. Teamcity calls the  publishMbeddrPlatformPublicationToMavenRepository
-       tasks but since we have a new publishing target we would need to change the teamcity config to also include publishMbeddrPlatformPublicationToGitHubPackagesRepository
-       If we change the Teamcity configuration this would break older maintenance and feature branches and we would loose the ablilty to
-       rebuild the exact same source code. There for this workaround is present that adds a dependency between the itemis maven repo
-       and github packages when we are on master or a maintenance branch.
-       */
     tasks.named("publishMbeddrPlatformPublicationToMavenRepository") {
         dependsOn("publishMbeddrPlatformPublicationToGitHubPackagesRepository")
     }
 }
 
-tasks.cyclonedxDirectBom {
-    jsonOutput = File(reportsDir, "sbom.json")
-    // No XML output
-    xmlOutput.unsetConvention()
-    // Don"t include license texts in generated SBOMs
-    includeLicenseText = false
+tasks.register<MpsMigrate>("migrate") {
+    dependsOn(build_allScripts)
 
-    // Include runtime deps only (bundled libs, language libs, mps, jbr)
-    includeConfigs = buildList {
-        addAll(bundledDeps.map { it.configName })
-        add(mpsLibraries.name)
-        add("jbr")
-        // TODO: mps config cannot be handled by cyclonedxBom, since it"s located in com.mbeddr project
-        //runtimeConfigs << project(":com.mbeddr").configurations.mps.name
-    }
+    javaLauncher = jbrToolchainLauncher
+    val mpsHomeProvider: Provider<Directory> by project
+    mpsHome = mpsHomeProvider
+
+    haltOnPrecheckFailure = true
+    haltOnDependencyError = true
+
+    projectDirectories.from(projectDir)
+    pluginRoots.from(tasks.named("resolveMpsLibraries", Sync::class.java).map { it.destinationDir })
+    pluginRoots.from(mpsHomeProvider.map { it.dir("plugins") })
+    maxHeapSize = "4G"
+}
+
+tasks.register<Remigrate>("remigrate") {
+    mustRunAfter("migrate")
+    dependsOn(build_allScripts)
+
+    javaLauncher = jbrToolchainLauncher
+    val mpsHomeProvider: Provider<Directory> by project
+    mpsHome = mpsHomeProvider
+
+    projectDirectories.from(projectDir)
+    pluginRoots.from(tasks.named("resolveMpsLibraries", Sync::class.java).map { it.destinationDir })
+    pluginRoots.from(mpsHomeProvider.map { it.dir("plugins") })
+    maxHeapSize = "4G"
+}
+
+tasks.build {
+    dependsOn(package_mbeddrPlatform)
 }

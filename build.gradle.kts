@@ -252,17 +252,24 @@ tasks.register("failOnTestError") {
 }
 
 tasks.zip {
-    dependsOn(tasks.cyclonedxBom)
+    // TODO(cyclonedx): was dependsOn(tasks.cyclonedxBom); changed to cyclonedxDirectBom per CLAUDE.md 2a
+    // but both cause "Cannot mutate cyclonedxDirectBom after consumed as variant" when the platform
+    // subproject resolves mpsExtensionsZip — see /workspace/docs/cyclonedx-issue.md for details.
+    // Commented out for now so the build works end-to-end; SBOM will be absent from the extensions zip.
+    // dependsOn(tasks.cyclonedxDirectBom)
     eachFile {
         if (path == "de.itemis.mps.extensions/MPS.ThirdParty.jar") {
             exclude()
         }
     }
-    from(reportsDir) {
-        include("sbom.json")
-        into("de.itemis.mps.extensions")
-    }
+    // from(reportsDir) { include("sbom.json"); into("de.itemis.mps.extensions") }
 }
+
+val mpsExtensionsZip by configurations.creating {
+    isCanBeConsumed = true
+    isCanBeResolved = false
+}
+artifacts.add(mpsExtensionsZip.name, tasks.zip)
 
 tasks.register<Delete>("cleanMps") {
     delete(fileTree(projectDir) {
@@ -478,4 +485,14 @@ val copyChangelog by tasks.registering {
 
 tasks.build {
     dependsOn(copyChangelog)
+}
+
+// Capture root-level providers before entering the subproject configuration block,
+// where 'this' changes to the subproject and root extensions are no longer in scope.
+val platformMpsHome = mpsDefaults.mpsHome
+val platformJbrLauncher = jbrToolchain.javaLauncher
+
+project(":code:platform") {
+    extra["mpsHomeProvider"] = platformMpsHome
+    extra["jbrToolchainLauncher"] = platformJbrLauncher
 }

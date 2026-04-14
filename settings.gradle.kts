@@ -6,3 +6,5 @@ pluginManagement {
 }
 
 rootProject.name = "MPS-extensions"
+
+include("code:platform")
